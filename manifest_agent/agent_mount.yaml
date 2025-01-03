@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elastic-agent-k8s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elastic-agent-k8s
+  template:
+    metadata:
+      labels:
+        app: elastic-agent-k8s
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: elastic-agent-k8s
+          image: harbor.hpc.ford.com/autonomy-champs/mach1ml_tools/elastic_agent_k8s:1.0
+          args: ["-c", "/usr/share/elastic-agent/agent.yml", "-e"]
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+            runAsUser: 2481571 #cchamp1
+            runAsGroup: 100181295 #adas-autonomy-hpc-admin
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 4Gi
+            requests:
+              cpu: 0.5
+              memory: 4Gi
+          volumeMounts:
+              - name: app-logs
+                mountPath: /s/cchamp1/ # Host Path to your logs 
+              - name: datastreams
+                mountPath: /usr/share/elastic-agent/agent.yml
+                readOnly: true
+                subPath: agent.yml                       
+          env:
+            - name: API_KEY
+              value: "Of2dt5MB74yaQXZ1GaD1:rRNOhhH1TU69J_Z6_QrxZA"
+            - name: ELASTIC_AGENT_CLOUD
+              value: "true"
+            - name: ELASTIC_CLOUD_ID
+              value: "autohitch_dat_aiml_pipeline_144256-preprod:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDZmMWY1NjQyZjc1MjRmZGI5MzEzNTdhZjE5MWI0MTg2JDVlMjAwZWQ0ZmZiMDQ5MDFhMTE0MmRlYzU5YWRhZTg" # Elastic Cloud ID
+            - name: ES_HOST
+              value: "https://6f1f5642f7524fdb931357af191b4186.psc.us-central1.gcp.cloud.es.io:9243" 
+            - name: ELASTIC_CLOUD_AUTH
+              value: "of2Bt5MB74yaQXZ1Ap9U:SWGKAbAvRz-5UcxbkhT6Bw" # Elastic Cloud Auth (username:password)
+      securityContext:
+        runAsUser: 2481571 #cchamp1
+        runAsGroup: 100181295 #adas-autonomy-hpc-admin
+        fsGroup: 100181295 #adas-autonomy-hpc-adminx
+        supplementalGroups: [1625292, 100147492, 100181296]
+      volumes:
+        - name: app-logs
+          hostPath:
+            path: /s/cchamp1/ 
+            type: Directory          
+        - name: datastreams
+          configMap:
+            defaultMode: 0666
+            name: elastic-agent-config
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastic-agent-config
+  labels:
+    k8s-app: elastic-agent-standalone
+data:
+  agent.yml: |-
+    # Elastic Agent configuration
+    outputs:
+      default:
+        type: elasticsearch
+        api_key: "of2Bt5MB74yaQXZ1Ap9U:SWGKAbAvRz-5UcxbkhT6Bw"
+        hosts: ["https://6f1f5642f7524fdb931357af191b4186.psc.us-central1.gcp.cloud.es.io:9243"]
+
+    agent:
+      monitoring:
+        enabled: true
+        use_output: default
+        logs: true
+        metrics: false
+    inputs:
+      - id: app-logs
+        type: filestream
+        use_output: default
+        streams:
+          # Stream ID for this data stream allowing Filebeat to track the state of the ingested files. Must be unique.
+          # Each filestream data stream creates a separate instance of the Filebeat filestream input.
+          - id: container-logs
+            data_stream:
+              dataset: kubernetes.container_logs
+              type: logs
+            paths:
+              - "/s/cchamp1/eakpan3/*.json" # Adjust to the log file path and pattern
+          # No system metrics collection; only log collection

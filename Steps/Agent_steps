@@ -1,0 +1,146 @@
+# Allowing Ingestion for Running Agent
+
+## Goal:
+The Elastic Agent should be able to ingest logs efficiently.
+
+## Steps:
+
+### 1. Building Docker Image:
+- **Error Encountered When Building Image:**
+  - **Message:**
+    ```
+    ERRO[0001] did not get container create message from subprocess: EOF 
+    ERRO[0000] retrieving list of mounts: read /proc/self/mountinfo: bad file descriptor 
+    error running container: from /usr/bin/runc creating container for [/bin/sh -c apt-get update && apt-get install -y curl tar tini]: time="2024-12-05T16:49:43-05:00" level=warning msg="unable to get oom kill count" error="no directory specified for memory.oom_control"
+    time="2024-12-05T16:49:43-05:00" level=error msg="runc create failed: unable to start container process: exec: \"/bin/sh\": stat /bin/sh: no such file or directory"
+    : exit status 1
+    Error: building at STEP "RUN apt-get update && apt-get install -y curl tar tini": while running runtime: exit status 1
+    ```
+
+  - **Solution:**
+    1. **Wrong Approach:** Use your own scratch space, as it seems not to work in `cchamp1`.
+    2. **Correct Approach:** Clear Docker images and cache due to mounting errors.
+       - **Commands:**
+         - `buildah images`
+         - `buildah prune -a`
+
+
+### 1. Add API Key to Config Map (DONE)
+- **Try a different API key** instead of the one that caused the error.
+  
+- **Errors:**
+  - **Failed Execution:**
+    - **Message:** 
+      - Failed: execution of component prevented: cannot be writable by group or others.
+
+    - 
+  
+  - **Bad Request Error when Running Agent Again:**
+    - **Message:**
+      - `Error from server (BadRequest): container "elastic-agent-k8s" in pod "elastic-agent-k8s-5656f7f8cd-pbjbx" is waiting to start: ContainerCreating.`
+    - **Solutions:**
+      - Just had to rerun pod creatation
+
+### 2. Change Permissions in Dockerfile
+- Change the permissions of the elastic-agent folder in the Dockerfile.
+  - Ensure that the folder is only readable and writable for the user and owner.
+
+#### Attempts
+
+1. Set User as cchamp1 & run agent commands as user
+    - **Changes made:**
+        - *Dockerfile*
+            - Set User ID to be 1000
+
+        -  *Manifest file*
+            - Inside of security context set runAsUser = 1000
+    - **Explaination**:
+        - Because user has current process running you are not able to add existing user to the docker
+        - K8s pod can run code as specific user id
+
+
+### 3. Send sample log data from  Elastic-Agent Folder to ElasticSearch
+- **Goals:** I need to be able to send test data to ElasticSearch index 
+- **Errors**:
+  - **Failed to connect** - Unable to send data
+
+    ```bash
+    Failed to connect to backoff(elasticsearch(http://127.0.0.1:9200)):
+    Attempting to reconnect to backoff(elasticsearch(http://127.0.0.1:9200)) with 9 reconnect attempt(s)
+    ```
+- **Solution:**
+  - Redeploy agent with using API key for beat and ensure that host host is ["https://6f1f5642f7524fdb931357af191b4186.psc.us-central1.gcp.cloud.es.io:9243"]
+  - Need to save the actual real yaml file somehow without secret and with secrets
+
+    
+
+### 4. Setup Test Logs
+- Set up test logs in `cchamp1` for the agent to ingest.
+- set the volume mount path to be `/s/cchamp1`
+#### **Errors:**
+  - Path is not allowed - Error
+    - **Message**: 
+      ```bash
+      15m         Warning   FailedCreate         replicaset/elastic-agent-k8s-5cc5cc75bf                         Error creating: admission webhook "validation.gatekeeper.sh" denied the request: [psp-host-filesystem] violation1: - Hostpath {"hostPath": {"path": "/s/cchamp1/eakpan3/", "type": "Directory"}, "name": "app-logs"} is not allowed, POD: elastic-agent-k8s-5cc5cc75bf-txh79. Allowed Hostpath: /s/cchamp1/....
+      ```
+    - **Solution**:
+      - Try just mounting the  `/s/cchamp1` path
+      - **Question**: Does mountpath have to be the same as hostPath??
+
+  - UID defined in container not allowed for namespace autonomy-mlops
+    - **Message:**
+      ```bash
+      webhook "validation.gatekeeper.sh" denied the request: [psp-host-filesystem] violation12: UID defined in container {"1000"} not allowed for namespace autonomy-mlops. Allowed: {"2481571"}, Disallowed: {"1000"}
+      ```
+    - Solutions:
+      - Only UID of cchamp1 is allowed to mount volume
+        - so UID of deployment & container must be from cchamp1
+
+
+
+
+### 5. Change Ownership of elastic-agent directory
+- **Goal**:
+  - You need to change the ownership of the elastic directory to be cchamp1 user 
+    - UID = 2481571
+- **Reasons**:
+  - You cannot run elastic-agent without write permission ONLY to owner
+  - UID must be 2481571 because you cannot mount volume with different UID
+
+- **Errors:**
+  - Cannot run pull tar via curl command
+    - **Message**:
+      ```bash
+      Warning: Failed to create the file elastic-agent-8.9.0-linux-x86_64.tar.gz: 
+      Warning: Permission denied
+      curl: (23) Failed writing body (0 != 1369)
+      ```
+    - **Solution**:
+      - Do not include curl pull inside `docker-entrypoint.sh`
+
+
+
+### 6. Running Elastic Agent managed by Fleet in K8s
+- **Goal**: 
+  - You should be able to be to run Agent managed by Fleet for better user interactions within Kibana UI
+
+- **Errors**:
+  - Ignores Fleet envirnoment variables
+    - Thoughts:
+      - Tried setting Fleet environment variables from [Elastic Agent managed by Fleet](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html)
+      - Doesn't use the Fleet variable for elasticsearch host url
+    - Message: `Failed to connect to backoff(...`
+    - Ideas:
+      - Test if environment variable are actually being set
+      - Add Fleet configuration to agent.yml via ConfigMap
+
+  - Cannot run `elastic-agent install` without root permissions
+    - So cannot add Fleet using the `install` command
+
+
+
+    
+
+---
+
+This structured documentation will help guide the process of enabling ingestion for the running agent while addressing the encountered issues. If you have any further questions or need additional clarification, please feel free to reach out.

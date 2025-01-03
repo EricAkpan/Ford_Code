@@ -1,0 +1,37 @@
+Checking if elastic-agent is in the PATH...
+elastic-agent not found in PATH
+Contents of /usr/local/bin:
+total 8
+-rwxrwxrwx. 1 root root 1324 Dec 18 15:33 docker-entrypoint.sh
+Contents of /usr/share/elastic-agent:
+total 532392
+-rw-rw-rw-. 1 root 100181295      1583 Dec 18 16:24 agent.yml
+drwxrwxrwx. 2 root root           4096 Dec 18 15:34 data
+-rwxrwxrwx. 1 root root      545153211 Dec 18 15:34 elastic-agent-8.9.0-linux-x86_64.tar.gz
+Contents of /usr/share/elastic_agent_k8s/agent/data:
+total 4
+drwxr-xr-x. 3 2481571 100181295 4096 Dec 18 16:25 elastic-agent-dc443b
+Contents of /s/cchamp1/eakpan3:
+total 1
+-rw-------. 1 2481571 31006 500 Dec 16 21:25 ecs_logs.log
+-rwx------. 1 2481571 31006 500 Dec 16 21:03 sample_logs.json
+1
+false
+https://7195e467ce0e4b862b46afccfac029c6.fleet.psc.us-central1.gcp.cloud.es.io:443
+of2Bt5MB74yaQXZ1Ap9U:SWGKAbAvRz-5UcxbkhT6Bw
+https://5e200ed4ffb04901a1142dec59adae86.psc.us-central1.gcp.cloud.es.io:9243
+true
+https://6f1f5642f7524fdb931357af191b4186.psc.us-central1.gcp.cloud.es.io:9243
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.261Z","log.origin":{"file.name":"cmd/run.go","file.line":236},"message":"APM instrumentation disabled","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.262Z","log.origin":{"file.name":"application/application.go","file.line":49},"message":"Gathered system information","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.271Z","log.origin":{"file.name":"application/application.go","file.line":55},"message":"Detected available inputs and outputs","log":{"source":"elastic-agent"},"inputs":["journald","redis","tcp","elasticsearch/metrics","system/metrics","statsd/metrics","stan/metrics","docker","http_endpoint","log","netflow","redis/metrics","activemq/metrics","haproxy/metrics","aws-cloudwatch","azure-eventhub","windows/metrics","cloud_defend/control","cloudfoundry","mysql/metrics","aws/metrics","cloudbeat/cis_eks","enterprisesearch/metrics","synthetics/browser","fleet-server","postgresql/metrics","uwsgi/metrics","gcp/metrics","zookeeper/metrics","audit/file_integrity","cloudbeat","synthetics/tcp","kubernetes/metrics","apache/metrics","jolokia/metrics","pf-host-agent","gcp-pubsub","apm","synthetics/icmp","osquery","beat/metrics","docker/metrics","audit/auditd","mqtt","syslog","kibana/metrics","containerd/metrics","traefik/metrics","vsphere/metrics","cel","cometd","unix","winlog","iis/metrics","nginx/metrics","pf-elastic-collector","cloudbeat/cis_aws","endpoint","packet","rabbitmq/metrics","kafka","synthetics/http","cloudfoundry/metrics","oracle/metrics","kafka/metrics","memcached/metrics","prometheus/metrics","sql/metrics","cloudbeat/vuln_mgmt_aws","container","httpjson","pf-elastic-symbolizer","awsfargate/metrics","nats/metrics","azure-blob-storage","udp","filestream","linux/metrics","mongodb/metrics","mssql/metrics","etcd/metrics","cloudbeat/cis_k8s","aws-s3","logstash/metrics","http/metrics","audit/system","entity-analytics","gcs","lumberjack","o365audit","azure/metrics","syncgateway/metrics"],"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.271Z","log.origin":{"file.name":"capabilities/capabilities.go","file.line":54},"message":"Capabilities file not found in /usr/share/elastic_agent_k8s/agent/capabilities.yml","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.271Z","log.origin":{"file.name":"application/application.go","file.line":61},"message":"Determined allowed capabilities","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.489Z","log.origin":{"file.name":"application/application.go","file.line":118},"message":"Parsed configuration and determined agent is managed locally","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.543Z","log.logger":"api","log.origin":{"file.name":"api/server.go","file.line":74},"message":"Starting stats endpoint","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.543Z","log.logger":"api","log.origin":{"file.name":"api/server.go","file.line":76},"message":"Metrics endpoint listening on: 127.0.0.1:6791 (configured: http://localhost:6791)","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.544Z","log.origin":{"file.name":"application/periodic.go","file.line":93},"message":"Configuration changes detected","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.544Z","log.logger":"composable.providers.docker","log.origin":{"file.name":"docker/docker.go","file.line":44},"message":"Docker provider skipped, unable to connect: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.546Z","log.origin":{"file.name":"upgrade/upgrade.go","file.line":99},"message":"Source URI reset from \"https://artifacts.elastic.co/downloads/\" to \"https://artifacts.elastic.co/downloads/\"","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.645Z","log.origin":{"file.name":"coordinator/coordinator.go","file.line":843},"message":"Updating running component model","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
+{"log.level":"info","@timestamp":"2024-12-18T16:48:27.855Z","log.origin":{"file.name":"coordinator/coordinator.go","file.line":843},"message":"Updating running component model","log":{"source":"elastic-agent"},"ecs.version":"1.6.0"}
